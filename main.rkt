@@ -1,7 +1,4 @@
 #lang racket
-(require 2htdp/universe)
-(require "game-logic.rkt")
-(require "graphics-engine.rkt")
 (require "sprites.rkt")
 
 (struct Piece [name isWhite sprite])
@@ -28,4 +25,10 @@
   (Piece (Piece-name piece) isWhite (Piece-sprite piece)))
 (define(set-sprite sprite piece)
   (Piece (Piece-name piece) (Piece-isWhite piece) sprite))
-(big-bang (WS boardVector) (to-draw draw))
+(provide Piece)
+(provide boardVector)
+(provide WS)
+(provide set-board)
+(provide set-name)
+(provide set-isWhite)
+(provide set-sprite)
