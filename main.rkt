@@ -1,6 +1,8 @@
 #lang racket
 (require 2htdp/universe)
 (require "game-logic.rkt")
+(require "graphics-engine.rkt")
+(require "sprites.rkt")
 
 (struct Piece [name isWhite sprite])
 (define emptyCell 'null)
@@ -8,14 +10,14 @@
 
 (define boardVector
   (vector-immutable 
-  (vector-immutable (Piece "rook" #f) (Piece "knight" #f) (Piece "bishop" #f) (Piece "king" #f) (Piece "king" #f) (Piece "bishop" #f) (Piece "knight" #f) (Piece "rook" #f))
-  (vector-immutable (Piece "pawn" #f) (Piece "pawn" #f) (Piece "pawn" #f) (Piece "pawn" #f) (Piece "pawn" #f) (Piece "pawn" #f) (Piece "pawn" #f) (Piece "pawn" #f))
+  (vector-immutable (Piece "rook" #f BLACK-ROOK) (Piece "knight" #f BLACK-KNIGHT) (Piece "bishop" #f BLACK-BISHOP) (Piece "queen" #f BLACK-QUEEN) (Piece "king" #f BLACK-KING) (Piece "bishop" #f BLACK-BISHOP) (Piece "knight" #f BLACK-KNIGHT) (Piece "rook" #f BLACK-ROOK))
+  (vector-immutable (Piece "pawn" #f BLACK-PAWN) (Piece "pawn" #f BLACK-PAWN) (Piece "pawn" #f BLACK-PAWN) (Piece "pawn" #f BLACK-PAWN) (Piece "pawn" #f BLACK-PAWN) (Piece "pawn" #f BLACK-PAWN) (Piece "pawn" #f BLACK-PAWN) (Piece "pawn" #f BLACK-PAWN))
   (vector-immutable emptyCell emptyCell emptyCell emptyCell emptyCell emptyCell emptyCell emptyCell)
   (vector-immutable emptyCell emptyCell emptyCell emptyCell emptyCell emptyCell emptyCell emptyCell)
   (vector-immutable emptyCell emptyCell emptyCell emptyCell emptyCell emptyCell emptyCell emptyCell)
   (vector-immutable emptyCell emptyCell emptyCell emptyCell emptyCell emptyCell emptyCell emptyCell)
-  (vector-immutable (Piece "pawn" #f) (Piece "pawn" #f) (Piece "pawn" #f) (Piece "pawn" #f) (Piece "pawn" #f) (Piece "pawn" #f) (Piece "pawn" #f) (Piece "pawn" #f))
-  (vector-immutable (Piece "rook" #f) (Piece "knight" #f) (Piece "bishop" #f) (Piece "king" #f) (Piece "king" #f) (Piece "bishop" #f) (Piece "knight" #f) (Piece "rook" #f))
+  (vector-immutable (Piece "pawn" #f WHITE-PAWN) (Piece "pawn" #f WHITE-PAWN) (Piece "pawn" #f WHITE-PAWN) (Piece "pawn" #f WHITE-PAWN) (Piece "pawn" #f WHITE-PAWN) (Piece "pawn" #f WHITE-PAWN) (Piece "pawn" #f WHITE-PAWN) (Piece "pawn" #f WHITE-PAWN))
+  (vector-immutable (Piece "rook" #f WHITE-ROOK) (Piece "knight" #f WHITE-KNIGHT) (Piece "bishop" #f WHITE-BISHOP) (Piece "queen" #f WHITE-QUEEN) (Piece "king" #f WHITE-KING) (Piece "bishop" #f WHITE-BISHOP) (Piece "knight" #f WHITE-KNIGHT) (Piece "rook" #f WHITE-ROOK))
   ))
 (struct WS[board])
 (define(set-board ws board)
@@ -26,3 +28,4 @@
   (Piece (Piece-name piece) isWhite (Piece-sprite piece)))
 (define(set-sprite sprite piece)
   (Piece (Piece-name piece) (Piece-isWhite piece) sprite))
+(big-bang (WS boardVector) (to-draw draw))
