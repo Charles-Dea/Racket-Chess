@@ -13,5 +13,13 @@
     (beside LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE)
     (beside DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE)))
 (define(draw ws)
-  board-sprite)
+  (vector-fold
+    (lambda(y state)
+      (vector-fold
+        (lambda(x s)
+          (place-image(Piece-sprite(vector-ref(vector-ref(WS-board ws)y)x))(+(* x 128)64)(+(* y 128)64)s))
+        state
+        (vector-ref(WS-board ws)y)))
+    board-sprite
+    (WS-board ws)))
 (provide draw)
