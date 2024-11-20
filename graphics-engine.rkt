@@ -1,6 +1,7 @@
 #lang racket
 (require 2htdp/image)
-(require"sprites.rkt")
+(require "sprites.rkt")
+
 (define board-sprite
   (above
     (beside LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE)
