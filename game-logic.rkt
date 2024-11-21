@@ -19,7 +19,11 @@
         [else (vector-ref fullRow col)] 
     )) fullRow))
    board)))
+
+(define (piece-at board coord) 
+(vector-ref (vector-ref board (BCoord-row coord)) (BCoord-col coord)))
 (provide BCoord)
 (provide BCoord-row)
 (provide BCoord-col)
 (provide move-piece)
+(provide piece-at)
