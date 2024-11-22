@@ -122,6 +122,29 @@
     [(eq? (piece-at board pc) 'null) (is-nw-unobstructed (- x 1) (- y 1) destCoord board)]
     [else #f])))
 
+;very deicdedly unfinished 
+(define (valid-pawn-move ws destCoord)
+  (let* 
+  [ 
+    (board (WS-board ws))
+    (startCoord (WS-firstCoord ws))
+    (firstX (BCoord-col startCoord))
+    (firstY (BCoord-row startCoord))
+    (endX (BCoord-col destCoord))
+    (endY (BCoord-row destCoord))
+    (deltaX (abs (- firstX endX)))
+    (deltaY (abs (- firstY endY)))]
+    (and (= deltaX 0)
+    (cond 
+    [(and (not (= firstY 0)) (< endY firstY)) (is-up-unobstructed (sub1 firstY) destCoord board)]
+    [(and (not (= firstY 7)) (> endY firstY)) (is-down-unobstructed (add1 firstY) destCoord board)]
+    [(and (not (= firstX 7)) (> endX firstX)) (is-right-unobstructed (add1 firstX) destCoord board)]
+    [(and (not (= firstX 0)) (< endX firstX)) (is-left-unobstructed (sub1 firstX) destCoord board)]
+    [else #f]
+    ))
+    )
+  )
+
 (define (valid-knight-move ws destCoord)
   (let* 
   [ (startCoord (WS-firstCoord ws))
@@ -211,6 +234,8 @@
   [(string=? piece-name "bishop") (valid-bishop-move ws destCoord)]
   [(string=? piece-name "queen") (or (valid-rook-move ws destCoord) (valid-bishop-move ws destCoord))]
   [(string=? piece-name "king") (valid-king-move ws destCoord)]
+  ;valid pawn move function is not currently completed
+  ;[(string=? piece-name "pawn") (valid-pawn-move ws destCoord)]
   [else #t]
   
   )))
