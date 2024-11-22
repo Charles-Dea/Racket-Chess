@@ -182,6 +182,20 @@
     ))
   )
 )
+
+(define (valid-king-move ws destCoord)
+  (let* 
+  [ (startCoord (WS-firstCoord ws))
+    (firstX (BCoord-col startCoord))
+    (firstY (BCoord-row startCoord))
+    (endX (BCoord-col destCoord))
+    (endY (BCoord-row destCoord))
+    (deltaX (abs (- firstX endX)))
+    (deltaY (abs (- firstY endY)))]
+    
+    (and (<= (abs deltaX) 1) (<= (abs deltaY) 1))
+    )
+  )
 ;Are you selecting a moveable piece(is it white's turn when you click a white piece) and 
 
 (define (move-is-possible ws destCoord) (let* 
@@ -196,6 +210,7 @@
   [(string=? piece-name "rook") (valid-rook-move ws destCoord)]
   [(string=? piece-name "bishop") (valid-bishop-move ws destCoord)]
   [(string=? piece-name "queen") (or (valid-rook-move ws destCoord) (valid-bishop-move ws destCoord))]
+  [(string=? piece-name "king") (valid-king-move ws destCoord)]
   [else #t]
   
   )))
