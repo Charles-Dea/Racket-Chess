@@ -4,6 +4,6 @@
 (require "game-logic.rkt")
 (require "graphics-engine.rkt")
 (require "input.rkt")
-(big-bang (WS boardVector #f #f) 
+(big-bang (WS boardVector #f #f #t) 
     (to-draw draw) 
     (on-mouse mousein))
