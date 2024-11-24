@@ -1,20 +1,20 @@
 #lang racket
 (require "sprites.rkt")
 
-(struct Piece [name isWhite sprite])
+(struct Piece [name isWhite sprite hasMoved])
 (define emptyCell 'null)
 
 
 (define boardVector
   (vector-immutable 
-  (vector-immutable (Piece "rook" #f BLACK-ROOK) (Piece "knight" #f BLACK-KNIGHT) (Piece "bishop" #f BLACK-BISHOP) (Piece "queen" #f BLACK-QUEEN) (Piece "king" #f BLACK-KING) (Piece "bishop" #f BLACK-BISHOP) (Piece "knight" #f BLACK-KNIGHT) (Piece "rook" #f BLACK-ROOK))
-  (vector-immutable (Piece "pawn" #f BLACK-PAWN) (Piece "pawn" #f BLACK-PAWN) (Piece "pawn" #f BLACK-PAWN) (Piece "pawn" #f BLACK-PAWN) (Piece "pawn" #f BLACK-PAWN) (Piece "pawn" #f BLACK-PAWN) (Piece "pawn" #f BLACK-PAWN) (Piece "pawn" #f BLACK-PAWN))
+  (vector-immutable (Piece "rook" #f BLACK-ROOK #f) (Piece "knight" #f BLACK-KNIGHT #f) (Piece "bishop" #f BLACK-BISHOP #f) (Piece "queen" #f BLACK-QUEEN #f) (Piece "king" #f BLACK-KING #f) (Piece "bishop" #f BLACK-BISHOP #f) (Piece "knight" #f BLACK-KNIGHT #f) (Piece "rook" #f BLACK-ROOK #f))
+  (vector-immutable (Piece "pawn" #f BLACK-PAWN #f) (Piece "pawn" #f BLACK-PAWN #f) (Piece "pawn" #f BLACK-PAWN #f) (Piece "pawn" #f BLACK-PAWN #f) (Piece "pawn" #f BLACK-PAWN #f) (Piece "pawn" #f BLACK-PAWN #f) (Piece "pawn" #f BLACK-PAWN #f) (Piece "pawn" #f BLACK-PAWN #f))
   (vector-immutable emptyCell emptyCell emptyCell emptyCell emptyCell emptyCell emptyCell emptyCell)
   (vector-immutable emptyCell emptyCell emptyCell emptyCell emptyCell emptyCell emptyCell emptyCell)
   (vector-immutable emptyCell emptyCell emptyCell emptyCell emptyCell emptyCell emptyCell emptyCell)
   (vector-immutable emptyCell emptyCell emptyCell emptyCell emptyCell emptyCell emptyCell emptyCell)
-  (vector-immutable (Piece "pawn" #t WHITE-PAWN) (Piece "pawn" #t WHITE-PAWN) (Piece "pawn" #t WHITE-PAWN) (Piece "pawn" #t WHITE-PAWN) (Piece "pawn" #t WHITE-PAWN) (Piece "pawn" #t WHITE-PAWN) (Piece "pawn" #t WHITE-PAWN) (Piece "pawn" #t WHITE-PAWN))
-  (vector-immutable (Piece "rook" #t WHITE-ROOK) (Piece "knight" #t WHITE-KNIGHT) (Piece "bishop" #t WHITE-BISHOP) (Piece "queen" #t WHITE-QUEEN) (Piece "king" #t WHITE-KING) (Piece "bishop" #t WHITE-BISHOP) (Piece "knight" #t WHITE-KNIGHT) (Piece "rook" #t WHITE-ROOK))
+  (vector-immutable (Piece "pawn" #t WHITE-PAWN #f) (Piece "pawn" #t WHITE-PAWN #f) (Piece "pawn" #t WHITE-PAWN #f) (Piece "pawn" #t WHITE-PAWN #f) (Piece "pawn" #t WHITE-PAWN #f) (Piece "pawn" #t WHITE-PAWN #f) (Piece "pawn" #t WHITE-PAWN #f) (Piece "pawn" #t WHITE-PAWN #f))
+  (vector-immutable (Piece "rook" #t WHITE-ROOK #f) (Piece "knight" #t WHITE-KNIGHT #f) (Piece "bishop" #t WHITE-BISHOP #f) (Piece "queen" #t WHITE-QUEEN #f) (Piece "king" #t WHITE-KING #f) (Piece "bishop" #t WHITE-BISHOP #f) (Piece "knight" #t WHITE-KNIGHT #f) (Piece "rook" #t WHITE-ROOK #f))
   ))
 (struct WS[board firstClick firstCoord isWhiteTurn])
 (define(set-board ws board)
@@ -29,6 +29,7 @@
 (provide Piece-name)
 (provide Piece-isWhite)
 (provide Piece-sprite)
+(provide Piece-hasMoved)
 (provide boardVector)
 (provide WS)
 (provide WS-board)

@@ -4,6 +4,7 @@
 (require "main.rkt")
 ; the coordinate on the board
 (struct BCoord [row col])
+
 (define (move-piece startCoord endCoord board) 
   (let*
     [(startRow (BCoord-row startCoord))
@@ -153,8 +154,11 @@
     (endX (BCoord-col destCoord))
     (endY (BCoord-row destCoord))
     (deltaX (abs (- firstX endX)))
-    (deltaY (abs (- firstY endY)))]
-    
+    (deltaY (abs (- firstY endY)))
+    (piece (piece-at (WS-board ws) startCoord))]
+    ;unsure how to access the piece data from this file, but this would just check if the piece has been moved
+    ;and if not, then it would allow- different moves to occur(depending on the) piece, or it would just get set to true if its not for a piece that can be affected differently based on the move number
+    (begin (println (if (not (Piece-hasMoved piece)) (ws (Piece-hasMoved #t)) (Piece-hasMoved piece))))
     (and (= 3 (+ deltaY deltaX)) (not (or (= deltaX 0) (= deltaY 0))))
     )
   )
