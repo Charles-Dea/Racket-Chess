@@ -15,8 +15,8 @@
 
    (vector-map (lambda (row fullRow) 
     (vector-map (lambda (col element) 
-    (cond
-        [(and (= row endRow) (= col endCol)) startPiece]
+    (println (Piece-moved? startPiece)) (cond
+        [(and (= row endRow) (= col endCol)) (begin (println (Piece-moved? startPiece)) (hasMoved #t startPiece))]
         [(and (= row startRow) (= col startCol)) 'null]
         [else (vector-ref fullRow col)] 
     )) fullRow))
@@ -156,8 +156,6 @@
     (deltaX (abs (- firstX endX)))
     (deltaY (abs (- firstY endY)))
     (piece (piece-at (WS-board ws) startCoord))]
-    ;I have confirmed that the if statement works, just the hasMoved function does not work
-    (begin (println (Piece-moved? piece)) (if (not (Piece-moved? piece)) (hasMoved #t piece) (hasMoved (Piece-moved?) piece)))
     (and (= 3 (+ deltaY deltaX)) (not (or (= deltaX 0) (= deltaY 0))))
     )
   )
