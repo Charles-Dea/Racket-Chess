@@ -15,8 +15,8 @@
 
    (vector-map (lambda (row fullRow) 
     (vector-map (lambda (col element) 
-    (cond
-        [(and (= row endRow) (= col endCol)) startPiece]
+    (println (Piece-moved? startPiece)) (cond
+        [(and (= row endRow) (= col endCol)) (begin (println (Piece-moved? startPiece)) (hasMoved #t startPiece))]
         [(and (= row startRow) (= col startCol)) 'null]
         [else (vector-ref fullRow col)] 
     )) fullRow))
@@ -156,9 +156,6 @@
     (deltaX (abs (- firstX endX)))
     (deltaY (abs (- firstY endY)))
     (piece (piece-at (WS-board ws) startCoord))]
-    ;unsure how to access the piece data from this file, but this would just check if the piece has been moved
-    ;and if not, then it would allow different moves to occur(depending on the) piece, or it would just get set to true if its not for a piece that can be affected differently based on the move number
-    (begin (println (Piece-moved? piece)) (if (not (Piece-moved? piece)) (hasMoved #t piece) (hasMoved (Piece-moved?) piece)))
     (and (= 3 (+ deltaY deltaX)) (not (or (= deltaX 0) (= deltaY 0))))
     )
   )
