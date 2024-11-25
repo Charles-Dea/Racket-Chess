@@ -123,28 +123,38 @@
     [(eq? (piece-at board pc) 'null) (is-nw-unobstructed (- x 1) (- y 1) destCoord board)]
     [else #f])))
 
-;very deicdedly unfinished 
+;very deicdedly unfinished --> pawns cannot move currently
 (define (valid-pawn-move ws destCoord)
   (let* 
-  [ 
-    (board (WS-board ws))
+  [ (board (WS-board ws))
     (startCoord (WS-firstCoord ws))
     (firstX (BCoord-col startCoord))
     (firstY (BCoord-row startCoord))
     (endX (BCoord-col destCoord))
     (endY (BCoord-row destCoord))
     (deltaX (abs (- firstX endX)))
-    (deltaY (abs (- firstY endY)))]
-    (and (= deltaX 0)
+    (deltaY (abs (- firstY endY)))
+    (piece (piece-at (WS-board ws) startCoord))]
+    (and (<= deltaX 1) (<= deltaY 2)
     (cond 
-    [(and (not (= firstY 0)) (< endY firstY)) (is-up-unobstructed (sub1 firstY) destCoord board)]
-    [(and (not (= firstY 7)) (> endY firstY)) (is-down-unobstructed (add1 firstY) destCoord board)]
-    [(and (not (= firstX 7)) (> endX firstX)) (is-right-unobstructed (add1 firstX) destCoord board)]
-    [(and (not (= firstX 0)) (< endX firstX)) (is-left-unobstructed (sub1 firstX) destCoord board)]
+    ;[(and (not))]
+    ;[]
+    ;first move(2 up) condition
+    [(and (< endY firstY) (not (Piece-moved? piece))) (and (is-up-unobstructed (- firstY 2) destCoord board) (is-down-unobstructed (sub1 firstY) destCoord board))]
+    ;first move 2 down condition
+    [(and (> endY firstY) (not (Piece-moved? piece))) (and  (is-down-unobstructed (+ firstY 2) destCoord board) (is-down-unobstructed (add1 firstY) destCoord board))]
+    ;munch detection(up and to the right)
+    ;munch detection(up and to the left)
+    ;munch detection(down and to the right)
+    ;munch detection(down and to the left)
+    ;en passant detection(up and to the right)
+    ;en passant detection(up and to the left)
+    ;en passant detection(down and to the right)
+    ;en passant detection(down and to the left)
     [else #f]
     ))
-    )
   )
+)
 
 (define (valid-knight-move ws destCoord)
   (let* 
@@ -154,8 +164,7 @@
     (endX (BCoord-col destCoord))
     (endY (BCoord-row destCoord))
     (deltaX (abs (- firstX endX)))
-    (deltaY (abs (- firstY endY)))
-    (piece (piece-at (WS-board ws) startCoord))]
+    (deltaY (abs (- firstY endY)))]
     (and (= 3 (+ deltaY deltaX)) (not (or (= deltaX 0) (= deltaY 0))))
     )
   )
@@ -220,9 +229,9 @@
     (and (<= (abs deltaX) 1) (<= (abs deltaY) 1))
     )
   )
-;Are you selecting a moveable piece(is it white's turn when you click a white piece) and 
 
-(define (move-is-possible ws destCoord) (let* 
+(define (move-is-possible ws destCoord)
+  (let* 
     [
     (startCoord (WS-firstCoord ws))
     (piece (piece-at (WS-board ws) startCoord))
@@ -236,7 +245,9 @@
   [(string=? piece-name "queen") (or (valid-rook-move ws destCoord) (valid-bishop-move ws destCoord))]
   [(string=? piece-name "king") (valid-king-move ws destCoord)]
   ;valid pawn move function is not currently completed
-  ;[(string=? piece-name "pawn") (valid-pawn-move ws destCoord)]
+  [(string=? piece-name "pawn") (valid-pawn-move ws destCoord)]
+  
+  ;pawn to queen detection(end of board reached) --> needs to be separate funciton that can have different parameters
   [else #t]
   
   )))
