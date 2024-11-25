@@ -15,8 +15,9 @@
 
    (vector-map (lambda (row fullRow) 
     (vector-map (lambda (col element) 
-    (println (Piece-moved? startPiece)) (cond
-        [(and (= row endRow) (= col endCol)) (begin (println (Piece-moved? startPiece)) (hasMoved #t startPiece))]
+    (Piece-moved? startPiece) 
+    (cond
+        [(and (= row endRow) (= col endCol)) (hasMoved #t startPiece)]
         [(and (= row startRow) (= col startCol)) 'null]
         [else (vector-ref fullRow col)] 
     )) fullRow))
@@ -50,7 +51,7 @@
   [(eq? space 'null) (is-up-unobstructed (sub1 y) destCoord board)]
   [else #f]
   ))
-  )
+)
 (define (is-down-unobstructed y destCoord board)
 (let* 
   [
@@ -123,7 +124,7 @@
     [(eq? (piece-at board pc) 'null) (is-nw-unobstructed (- x 1) (- y 1) destCoord board)]
     [else #f])))
 
-;very deicdedly unfinished --> pawns cannot move currently
+;very deicdedly unfinished
 (define (valid-pawn-move ws destCoord)
   (let* 
   [ (board (WS-board ws))
@@ -139,10 +140,14 @@
     (cond 
     ;[(and (not))]
     ;[]
-    ;first move(2 up) condition
-    [(and (< endY firstY) (not (Piece-moved? piece))) (and (is-up-unobstructed (- firstY 2) destCoord board) (is-down-unobstructed (sub1 firstY) destCoord board))]
-    ;first move 2 down condition
-    [(and (> endY firstY) (not (Piece-moved? piece))) (and  (is-down-unobstructed (+ firstY 2) destCoord board) (is-down-unobstructed (add1 firstY) destCoord board))]
+    ;normal forward movement for white
+    [(and (= endY (sub1 firstY)) (= deltaX 0)) (begin (println (is-up-unobstructed (sub1 firstY) destCoord board)) (is-up-unobstructed (sub1 firstY) destCoord board))]
+    ;normal forward movement for black
+    [(and (= endY (add1 firstY)) (= deltaX 0)) (begin (println (is-down-unobstructed (add1 firstY) destCoord board)) (is-down-unobstructed (add1 firstY) destCoord board))]
+    ;optional 2 space move for first move - white
+    [(and (= endY (- firstY 2)) (= deltaX 0) (not (Piece-moved? piece))) (is-up-unobstructed (sub1 firstY) destCoord board)]
+    ;optional 2 space move for first move - black
+    [(and (= endY (+ firstY 2)) (= deltaX 0) (not (Piece-moved? piece))) (is-down-unobstructed (add1 firstY) destCoord board)]
     ;munch detection(up and to the right)
     ;munch detection(up and to the left)
     ;munch detection(down and to the right)
