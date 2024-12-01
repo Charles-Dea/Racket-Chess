@@ -2,8 +2,8 @@
 
 (require srfi/43)
 (require "main.rkt")
+(require "globals.rkt")
 ; the coordinate on the board
-(struct BCoord [row col])
 
 (define (move-piece startCoord endCoord board) 
   (let*
@@ -15,16 +15,13 @@
 
    (vector-map (lambda (row fullRow) 
     (vector-map (lambda (col element) 
-    (Piece-moved? startPiece) 
+    ;(Piece-moved? startPiece) 
     (cond
-        [(and (= row endRow) (= col endCol)) (hasMoved #t startPiece)]
+        [(and (= row endRow) (= col endCol)) (hasMoved #t startPiece (BCoord row col))]
         [(and (= row startRow) (= col startCol)) 'null]
         [else (vector-ref fullRow col)] 
     )) fullRow))
    board)))
-
-(define (piece-at board coord) 
-(vector-ref (vector-ref board (BCoord-row coord)) (BCoord-col coord)))
 
 (define (handle-move ws coord) 
   (let* 
@@ -33,7 +30,7 @@
   (cond 
     ;Get the place the player wants to move to, then don't update the the worldstate until we have checked if the move is actually possible
     [(and (WS-firstClick ws)  (not (eq? 'null selected-piece))  (boolean=? (Piece-isWhite selected-piece) (WS-isWhiteTurn ws))) (WS (WS-board ws) #f #f (WS-isWhiteTurn ws))]
-    [(and (WS-firstClick ws) (move-is-possible ws coord))  (WS (move-piece (WS-firstCoord ws) coord (WS-board ws)) #f #f (not (WS-isWhiteTurn ws)))]
+    [(and (WS-firstClick ws) (move-is-possible ws coord)) (alterEnPassant (removeEnPassant (WS (move-piece (WS-firstCoord ws) coord (WS-board ws)) #f #f (not (WS-isWhiteTurn ws)))))]
     [(eq? selected-piece 'null) ws]
     [(boolean=? (Piece-isWhite selected-piece) (WS-isWhiteTurn ws)) (WS (WS-board ws) #t coord (WS-isWhiteTurn ws))]
     [else ws])))
@@ -133,9 +130,22 @@
     (firstY (BCoord-row startCoord))
     (endX (BCoord-col destCoord))
     (endY (BCoord-row destCoord))
+    (dXSigned (- endX firstX))
+    (dYSigned (- endY firstY))
     (deltaX (abs (- firstX endX)))
     (deltaY (abs (- firstY endY)))
-    (piece (piece-at (WS-board ws) startCoord))]
+    (piece (piece-at (WS-board ws) startCoord))
+    (isWhite (Piece-isWhite piece))
+    (destPiece (piece-at (WS-board ws) destCoord))
+    (destHasPiece (not (eq? destPiece 'null)))
+    (destPieceIsOpp (and destHasPiece (not (boolean=? (Piece-isWhite destPiece) isWhite))))
+    (belowCoord (BCoord (add1 (BCoord-row destCoord)) (BCoord-col destCoord)))
+    (aboveCoord (BCoord (sub1 (BCoord-row destCoord)) (BCoord-col destCoord)))
+    (belowPiece (piece-at board belowCoord))
+    (abovePiece (piece-at board aboveCoord))
+    (abovePieceCanEnPassant (and (is-piece? abovePiece) (not (boolean=? isWhite (Piece-isWhite abovePiece))) (Piece-canEnPassant? abovePiece)))
+    (belowPieceCanEnPassant (and (is-piece? belowPiece) (not (boolean=? isWhite (Piece-isWhite belowPiece))) (Piece-canEnPassant? belowPiece)))
+    ]
     (and (<= deltaX 1) (<= deltaY 2)
     (cond 
     ;[(and (not))]
@@ -148,11 +158,13 @@
     [(and (= endY (- firstY 2)) (= deltaX 0) (not (Piece-moved? piece))) (is-up-unobstructed (sub1 firstY) destCoord board)]
     ;optional 2 space move for first move - black
     [(and (= endY (+ firstY 2)) (= deltaX 0) (not (Piece-moved? piece))) (is-down-unobstructed (add1 firstY) destCoord board)]
-    ;munch detection(up and to the right)
-    ;munch detection(up and to the left)
-    ;munch detection(down and to the right)
-    ;munch detection(down and to the left)
+    ; munch for white pawns
+    [(and isWhite destPieceIsOpp (negative? dYSigned) (= 1 deltaX)) #t]
+    ; munch for black pawns
+    [(and (not isWhite) destPieceIsOpp (positive? dYSigned) (= deltaX)) #t]
     ;en passant detection(up and to the right)
+    [(and isWhite belowPieceCanEnPassant (= -1 dYSigned) (= 1 deltaX)) #t]
+    [(and (not isWhite) abovePieceCanEnPassant (= 1 dYSigned) (= 1 deltaX)) #t]
     ;en passant detection(up and to the left)
     ;en passant detection(down and to the right)
     ;en passant detection(down and to the left)
@@ -262,8 +274,4 @@
 ;(define (special-moves ws coord) )
 
 (provide handle-move)
-(provide BCoord)
-(provide BCoord-row)
-(provide BCoord-col)
 (provide move-piece)
-(provide piece-at)

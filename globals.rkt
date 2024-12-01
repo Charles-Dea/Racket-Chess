@@ -1,5 +1,12 @@
 #lang racket
-(define scalar .75)
+(define scalar .5)
+(struct BCoord [row col])
+(define (piece-at board coord) 
+(vector-ref (vector-ref board (BCoord-row coord)) (BCoord-col coord)))
 (define (int-floor x) (inexact->exact (floor x)))
 (provide int-floor)
 (provide scalar)
+(provide BCoord)
+(provide BCoord-col)
+(provide BCoord-row)
+(provide piece-at)
