@@ -20,7 +20,7 @@
   (vector-immutable (Piece "pawn" #t WHITE-PAWN #f #f) (Piece "pawn" #t WHITE-PAWN #f #f) (Piece "pawn" #t WHITE-PAWN #f #f) (Piece "pawn" #t WHITE-PAWN #f #f) (Piece "pawn" #t WHITE-PAWN #f #f) (Piece "pawn" #t WHITE-PAWN #f #f) (Piece "pawn" #t WHITE-PAWN #f #f) (Piece "pawn" #t WHITE-PAWN #f #f))
   (vector-immutable (Piece "rook" #t WHITE-ROOK #f #f) (Piece "knight" #t WHITE-KNIGHT #f #f) (Piece "bishop" #t WHITE-BISHOP #f #f) (Piece "queen" #t WHITE-QUEEN #f #f) (Piece "king" #t WHITE-KING #f #f) (Piece "bishop" #t WHITE-BISHOP #f #f) (Piece "knight" #t WHITE-KNIGHT #f #f) (Piece "rook" #t WHITE-ROOK #f #f))
   ))
-(struct WS [board firstClick firstCoord isWhiteTurn])
+(struct WS [board firstClick firstCoord isWhiteTurn whiteKingPos blackKingPos])
 (define (set-board ws board)
   (WS board))
 
@@ -75,15 +75,11 @@
       (let* 
         [
           (board (WS-board ws))
-          (belowCoord (BCoord (min 7 (add1 row)) col))
-          (aboveCoord (BCoord (max 0 (sub1 row)) col))
-          (belowPiece (piece-at board belowCoord))
-          (abovePiece (piece-at board aboveCoord))
-          (belowPieceCanEnPassant (is-piece? belowPiece))
         ]
       (cond  
         [(and (is-piece? element) (boolean=? (Piece-isWhite element) (WS-isWhiteTurn ws)) (Piece-canEnPassant? element)) (Piece 
           (Piece-name element) (Piece-isWhite element) (Piece-sprite element) (Piece-moved? element) #f)]
+        [(and (is-piece? element) (string=? piece-name "pawn") (or (= row 7) (= row 0))) (Piece "queen" (Piece-isWhite element) (if (Piece-isWhite element) WHITE-QUEEN BLACK-QUEEN) #t #f)]
         [else element]))
 
     ) fullRow)

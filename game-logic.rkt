@@ -23,6 +23,21 @@
     )) fullRow))
    board)))
 
+(define (newKingPos ws coord isWhite) (let* [
+  (board (WS-board ws))
+  (first-coord (WS-firstCoord ws))
+  (selected-piece (piece-at board first-coord))
+  (selected-piece-is-king (and (is-piece? selected-piece) (string=? (Piece-name selected-piece) "king")))
+  (selected-piece-isWhite (and (is-piece? selected-piece) (Piece-isWhite selected-piece)))
+  (currentKingPos (cond
+    [isWhite (WS-whiteKingPos ws)]
+    [else (WS-blackKingPos ws)]))
+]
+  (cond
+    [(and (boolean=? isWhite selected-piece-isWhite) selected-piece-is-king) coord]
+    [else currentKingPos]
+  )))
+
 (define (handle-move ws coord) 
   (let* 
     [(selected-piece (piece-at (WS-board ws) coord))]
@@ -30,7 +45,7 @@
   (cond 
     ;Get the place the player wants to move to, then don't update the the worldstate until we have checked if the move is actually possible
     [(and (WS-firstClick ws)  (not (eq? 'null selected-piece))  (boolean=? (Piece-isWhite selected-piece) (WS-isWhiteTurn ws))) (WS (WS-board ws) #f #f (WS-isWhiteTurn ws))]
-    [(and (WS-firstClick ws) (move-is-possible ws coord)) (alterEnPassant (removeEnPassant (WS (move-piece (WS-firstCoord ws) coord (WS-board ws)) #f #f (not (WS-isWhiteTurn ws)))))]
+    [(and (WS-firstClick ws) (move-is-possible ws coord)) (alterEnPassant (removeEnPassant (WS (move-piece (WS-firstCoord ws) coord (WS-board ws)) #f #f (not (WS-isWhiteTurn ws)) (newKingPos coord #t) (newKingPos coord #f))))]
     [(eq? selected-piece 'null) ws]
     [(boolean=? (Piece-isWhite selected-piece) (WS-isWhiteTurn ws)) (WS (WS-board ws) #t coord (WS-isWhiteTurn ws))]
     [else ws])))
@@ -247,6 +262,8 @@
     )
   )
 
+
+
 (define (move-is-possible ws destCoord)
   (let* 
     [
@@ -261,7 +278,6 @@
   [(string=? piece-name "bishop") (valid-bishop-move ws destCoord)]
   [(string=? piece-name "queen") (or (valid-rook-move ws destCoord) (valid-bishop-move ws destCoord))]
   [(string=? piece-name "king") (valid-king-move ws destCoord)]
-  ;valid pawn move function is not currently completed
   [(string=? piece-name "pawn") (valid-pawn-move ws destCoord)]
   
   ;pawn to queen detection(end of board reached) --> needs to be separate funciton that can have different parameters
