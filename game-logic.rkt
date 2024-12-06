@@ -33,22 +33,35 @@
     [isWhite (WS-whiteKingPos ws)]
     [else (WS-blackKingPos ws)]))
 ]
+  (begin
+  (println selected-piece-is-king)
   (cond
     [(and (boolean=? isWhite selected-piece-isWhite) selected-piece-is-king) coord]
     [else currentKingPos]
-  )))
+  ))))
+
+(define (print-king-poses ws)
+  (let* 
+  [
+    (bKingPos (WS-blackKingPos ws))
+    (wKingPos (WS-whiteKingPos ws))
+  ] 
+  
+  (println (string-append "black: " (number->string (BCoord-row bKingPos)) " " (number->string (BCoord-col bKingPos)) " " "white: " (number->string (BCoord-row wKingPos)) " " (number->string (BCoord-col wKingPos)))))
+)
 
 (define (handle-move ws coord) 
   (let* 
     [(selected-piece (piece-at (WS-board ws) coord))]
-    
+  
+  (begin (print-king-poses ws)
   (cond 
     ;Get the place the player wants to move to, then don't update the the worldstate until we have checked if the move is actually possible
-    [(and (WS-firstClick ws)  (not (eq? 'null selected-piece))  (boolean=? (Piece-isWhite selected-piece) (WS-isWhiteTurn ws))) (WS (WS-board ws) #f #f (WS-isWhiteTurn ws))]
-    [(and (WS-firstClick ws) (move-is-possible ws coord)) (alterEnPassant (removeEnPassant (WS (move-piece (WS-firstCoord ws) coord (WS-board ws)) #f #f (not (WS-isWhiteTurn ws)) (newKingPos coord #t) (newKingPos coord #f))))]
+    [(and (WS-firstClick ws)  (not (eq? 'null selected-piece))  (boolean=? (Piece-isWhite selected-piece) (WS-isWhiteTurn ws))) (WS (WS-board ws) #f #f (WS-isWhiteTurn ws) (WS-whiteKingPos ws) (WS-blackKingPos ws))]
+    [(and (WS-firstClick ws) (move-is-possible ws coord)) (alterEnPassant (removeEnPassant (WS (move-piece (WS-firstCoord ws) coord (WS-board ws)) #f #f (not (WS-isWhiteTurn ws)) (newKingPos ws coord #t) (newKingPos ws coord #f))))]
     [(eq? selected-piece 'null) ws]
-    [(boolean=? (Piece-isWhite selected-piece) (WS-isWhiteTurn ws)) (WS (WS-board ws) #t coord (WS-isWhiteTurn ws))]
-    [else ws])))
+    [(boolean=? (Piece-isWhite selected-piece) (WS-isWhiteTurn ws)) (WS (WS-board ws) #t coord (WS-isWhiteTurn ws) (WS-whiteKingPos ws) (WS-blackKingPos ws))]
+    [else ws]))))
 
 (define (is-up-unobstructed y destCoord board) 
   (let* 
@@ -166,9 +179,9 @@
     ;[(and (not))]
     ;[]
     ;normal forward movement for white
-    [(and (= endY (sub1 firstY)) (= deltaX 0)) (begin (println (is-up-unobstructed (sub1 firstY) destCoord board)) (is-up-unobstructed (sub1 firstY) destCoord board))]
+    [(and (= endY (sub1 firstY)) (= deltaX 0))  (is-up-unobstructed (sub1 firstY) destCoord board)]
     ;normal forward movement for black
-    [(and (= endY (add1 firstY)) (= deltaX 0)) (begin (println (is-down-unobstructed (add1 firstY) destCoord board)) (is-down-unobstructed (add1 firstY) destCoord board))]
+    [(and (= endY (add1 firstY)) (= deltaX 0))  (is-down-unobstructed (add1 firstY) destCoord board)]
     ;optional 2 space move for first move - white
     [(and (= endY (- firstY 2)) (= deltaX 0) (not (Piece-moved? piece))) (is-up-unobstructed (sub1 firstY) destCoord board)]
     ;optional 2 space move for first move - black

@@ -65,7 +65,7 @@
 
   ) (WS-board ws))
 
-(WS-firstClick ws) (WS-firstCoord ws) (WS-isWhiteTurn ws)))
+(WS-firstClick ws) (WS-firstCoord ws) (WS-isWhiteTurn ws) (WS-whiteKingPos ws) (WS-blackKingPos ws)))
 
 (define (alterEnPassant ws) (WS 
 
@@ -79,14 +79,14 @@
       (cond  
         [(and (is-piece? element) (boolean=? (Piece-isWhite element) (WS-isWhiteTurn ws)) (Piece-canEnPassant? element)) (Piece 
           (Piece-name element) (Piece-isWhite element) (Piece-sprite element) (Piece-moved? element) #f)]
-        [(and (is-piece? element) (string=? piece-name "pawn") (or (= row 7) (= row 0))) (Piece "queen" (Piece-isWhite element) (if (Piece-isWhite element) WHITE-QUEEN BLACK-QUEEN) #t #f)]
+        [(and (is-piece? element) (string=? (Piece-name element) "pawn") (or (= row 7) (= row 0))) (Piece "queen" (Piece-isWhite element) (if (Piece-isWhite element) WHITE-QUEEN BLACK-QUEEN) #t #f)]
         [else element]))
 
     ) fullRow)
 
   ) (WS-board ws))
 
-(WS-firstClick ws) (WS-firstCoord ws) (WS-isWhiteTurn ws)))
+(WS-firstClick ws) (WS-firstCoord ws) (WS-isWhiteTurn ws) (WS-whiteKingPos ws) (WS-blackKingPos ws)))
 
 (provide Piece)
 (provide Piece-name)
@@ -109,5 +109,8 @@
 
 (provide alterEnPassant)
 (provide removeEnPassant)
+
+(provide WS-blackKingPos)
+(provide WS-whiteKingPos)
 
 (provide is-piece?)

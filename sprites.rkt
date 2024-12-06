@@ -15,6 +15,7 @@
 (define BLACK-QUEEN (bitmap "img/b_queen_png_128px.png"))
 (define WHITE-KING (bitmap "img/w_king_png_128px.png"))
 (define BLACK-KING (bitmap "img/b_king_png_128px.png"))
+(define BUTTON (scale .1 (bitmap "img.png")))
 (provide LIGHT-SQUARE)
 (provide DARK-SQUARE)
 (provide WHITE-PAWN)
@@ -29,3 +30,4 @@
 (provide BLACK-QUEEN)
 (provide WHITE-KING)
 (provide BLACK-KING)
+(provide BUTTON)
