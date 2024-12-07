@@ -5,6 +5,6 @@
 (require "graphics-engine.rkt")
 (require "globals.rkt")
 (require "input.rkt")
-(big-bang (WS boardVector #f #f #t (BCoord 7 4) (BCoord 0 4)) 
+(big-bang (WS boardVector #f #f #t (BCoord 7 4) (BCoord 0 4) NONE) 
     (to-draw draw) 
     (on-mouse mousein))

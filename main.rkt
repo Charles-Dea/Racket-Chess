@@ -2,8 +2,10 @@
 (require "sprites.rkt")
 (require "globals.rkt")
 (require srfi/43)
-
-(define (is-piece? p) (not (eq? p 'null)))
+(define NONE 0)
+(define WHITE 1)
+(define BLACK 2)
+(define (is-piece? p) (and (not (eq? p 'null)) (not (eq? p 'nosquare))))
 
 (struct Piece [name isWhite sprite moved? canEnPassant?])
 (define emptyCell 'null)
@@ -20,10 +22,14 @@
   (vector-immutable (Piece "pawn" #t WHITE-PAWN #f #f) (Piece "pawn" #t WHITE-PAWN #f #f) (Piece "pawn" #t WHITE-PAWN #f #f) (Piece "pawn" #t WHITE-PAWN #f #f) (Piece "pawn" #t WHITE-PAWN #f #f) (Piece "pawn" #t WHITE-PAWN #f #f) (Piece "pawn" #t WHITE-PAWN #f #f) (Piece "pawn" #t WHITE-PAWN #f #f))
   (vector-immutable (Piece "rook" #t WHITE-ROOK #f #f) (Piece "knight" #t WHITE-KNIGHT #f #f) (Piece "bishop" #t WHITE-BISHOP #f #f) (Piece "queen" #t WHITE-QUEEN #f #f) (Piece "king" #t WHITE-KING #f #f) (Piece "bishop" #t WHITE-BISHOP #f #f) (Piece "knight" #t WHITE-KNIGHT #f #f) (Piece "rook" #t WHITE-ROOK #f #f))
   ))
-(struct WS [board firstClick firstCoord isWhiteTurn whiteKingPos blackKingPos])
-(define (set-board ws board)
-  (WS board))
 
+(struct WS [board firstClick firstCoord isWhiteTurn whiteKingPos blackKingPos winner])
+
+(define (set-board ws board)
+  (WS board (WS-firstClick ws) (WS-firstCoord ws) (WS-isWhiteTurn ws) (WS-whiteKingPos ws) (WS-blackKingPos ws) (WS-winner ws)))
+
+(define (set-winner ws winner)
+  (WS (WS-board ws) (WS-firstClick ws) (WS-firstCoord ws) (WS-isWhiteTurn ws) (WS-whiteKingPos ws) (WS-blackKingPos ws) winner))
 
 (define (set-name name piece)
   (Piece name (Piece-isWhite piece) (Piece-sprite piece) (Piece-moved? piece)))
@@ -65,7 +71,7 @@
 
   ) (WS-board ws))
 
-(WS-firstClick ws) (WS-firstCoord ws) (WS-isWhiteTurn ws) (WS-whiteKingPos ws) (WS-blackKingPos ws)))
+(WS-firstClick ws) (WS-firstCoord ws) (WS-isWhiteTurn ws) (WS-whiteKingPos ws) (WS-blackKingPos ws) (WS-winner ws)))
 
 (define (alterEnPassant ws) (WS 
 
@@ -86,7 +92,7 @@
 
   ) (WS-board ws))
 
-(WS-firstClick ws) (WS-firstCoord ws) (WS-isWhiteTurn ws) (WS-whiteKingPos ws) (WS-blackKingPos ws)))
+(WS-firstClick ws) (WS-firstCoord ws) (WS-isWhiteTurn ws) (WS-whiteKingPos ws) (WS-blackKingPos ws) (WS-winner ws)))
 
 (provide Piece)
 (provide Piece-name)
@@ -100,8 +106,10 @@
 (provide WS-firstClick)
 (provide WS-firstCoord)
 (provide WS-isWhiteTurn)
+(provide WS-winner)
 
 (provide set-board)
+(provide set-winner)
 (provide set-name)
 (provide set-isWhite)
 (provide set-sprite)
@@ -114,3 +122,6 @@
 (provide WS-whiteKingPos)
 
 (provide is-piece?)
+(provide NONE)
+(provide WHITE)
+(provide BLACK)

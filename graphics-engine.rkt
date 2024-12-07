@@ -19,7 +19,8 @@
   )BUTTON))
 
 (define(draw ws)
-  (let* [
+  (cond
+  [(= (WS-winner ws) NONE)(let* [
     (firstCoord (WS-firstCoord ws)) 
     (firstCol (if (eq? firstCoord #f) -1 (BCoord-col firstCoord)))
     (firstRow (if (eq? firstCoord #f) -1 (BCoord-row firstCoord)))
@@ -41,5 +42,7 @@
         row))
     board-sprite
     (WS-board ws)) 
-  )))
+  ))]
+  [(= (WS-winner ws) WHITE) (scale scalar (text "White Won\n\nClick to play again." 128 "black"))]
+  [else (scale scalar (text "Black Won\n\nClick to play again." 128 "black"))]))
 (provide draw)

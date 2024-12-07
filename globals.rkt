@@ -1,8 +1,11 @@
 #lang racket
 (define scalar .5)
 (struct BCoord [row col])
+(define (is-valid-coord coord) (and (>= (BCoord-row coord) 0) (<= (BCoord-row coord) 7) (<= (BCoord-col coord) 7) (>= (BCoord-col coord) 0)))
 (define (piece-at board coord) 
-(vector-ref (vector-ref board (BCoord-row coord)) (BCoord-col coord)))
+    (if(is-valid-coord coord)
+        (vector-ref (vector-ref board (BCoord-row coord)) (BCoord-col coord))
+        'nosquare))
 (define (int-floor x) (inexact->exact (floor x)))
 (provide int-floor)
 (provide scalar)
