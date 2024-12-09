@@ -57,16 +57,45 @@
       (moving-piece (piece-at board firstCoord))
       (moving-piece-is-king (string=? (Piece-name moving-piece) "king"))
     ]
-    (WS
-      (move-piece firstCoord coord board)
-      #f 
-      firstCoord
-      (WS-isWhiteTurn ws)
-      (newKingPos ws coord #t)
-      (newKingPos ws coord #f)
-      NONE
+    (invert-isWhiteTurn
+      (alterEnPassant
+        (removeEnPassant
+          (WS
+            (move-piece firstCoord coord board)
+            #f 
+            firstCoord
+            (not (WS-isWhiteTurn ws))
+            (newKingPos ws coord #t)
+            (newKingPos ws coord #f)
+            NONE
+          )
+        )
+      )
     )
   )
+)
+
+(define (is-valid-castle ws coord)
+
+  (let*
+    [
+      (board (WS-board ws))
+      (pcoord (WS-firstCoord ws))
+      (selected-piece (piece-at board pcoord))
+      (isWhite (Piece-isWhite selected-piece))
+      (destPiece (piece-at board coord))
+      (isSelectedPieceKing (string=? "king" (Piece-name selected-piece)))
+      (destPieceIsAllyRook (and (is-piece? destPiece) (string=? (Piece-name destPiece) "rook") (boolean=? (Piece-isWhite destPiece) isWhite)))
+    ]
+    (
+        (and 
+          isSelectedPieceKing 
+          (or destPieceIsAllyRook (= (abs (- (BCoord-col coord) (BCoord-col pcoord))) 2) (= (BCoord-row coord) (BCoord-row pcoord)))
+
+        )
+    )
+  )
+
 )
 
 (define (handle-move ws coord) 
@@ -79,6 +108,7 @@
   (cond 
     ;Get the place the player wants to move to, then don't update the the worldstate until we have checked if the move is actually possible
    ; [(and (WS-firstClick ws) (move-is-possible ws coord) (is-in-check (hypothetical-move ws coord))) ws]
+    ;[(is-valid-castle ws coord) (castle ws)]
     [(and (WS-firstClick ws)  (not (eq? 'null selected-piece))  (boolean=? (Piece-isWhite selected-piece) (WS-isWhiteTurn ws))) (WS (WS-board ws) #f #f (WS-isWhiteTurn ws) (WS-whiteKingPos ws) (WS-blackKingPos ws) (WS-winner ws))]
     [(and (WS-firstClick ws) (move-is-possible ws coord)) (alterEnPassant (removeEnPassant (WS (move-piece (WS-firstCoord ws) coord (WS-board ws)) #f #f (not (WS-isWhiteTurn ws)) (newKingPos ws coord #t) (newKingPos ws coord #f) (WS-winner ws))))]
     [(eq? selected-piece 'null) ws]

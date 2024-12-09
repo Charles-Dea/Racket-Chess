@@ -6,19 +6,44 @@
 (require "globals.rkt")
 (require "game-logic.rkt")
 
-(define board-sprite
-  (beside (above
-    (beside LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE)
-    (beside DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE)
-    (beside LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE)
-    (beside DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE)
-    (beside LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE)
-    (beside DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE)
-    (beside LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE)
-    (beside DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE)
-  )BUTTON))
+(define (whoseTurnText ws)
+  (let*
+    [
+      (isWhite (WS-isWhiteTurn ws))
+      (fontSize 70)
+    ]
+    (cond
+      [isWhite (text "White to move" fontSize "black")]
+      [else (text "Black to move" fontSize "black")]
+    )
+  )
+)
 
-(define(draw ws)
+(define (respective-forfeit-button ws)
+(let*
+    [
+      (isWhite (WS-isWhiteTurn ws))
+    ]
+    (cond
+      [isWhite BUTTON-WHITE]
+      [else BUTTON-BLACK]
+    )
+  )
+)
+
+(define board-sprite
+   (above
+    (beside LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE)
+    (beside DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE)
+    (beside LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE)
+    (beside DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE)
+    (beside LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE)
+    (beside DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE)
+    (beside LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE)
+    (beside DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE DARK-SQUARE LIGHT-SQUARE)
+  ))
+
+(define (draw ws)
   (cond
   [(= (WS-winner ws) NONE)(let* [
     (firstCoord (WS-firstCoord ws)) 
@@ -26,7 +51,9 @@
     (firstRow (if (eq? firstCoord #f) -1 (BCoord-row firstCoord)))
     (highlight (square 128 "solid" (color 0 255 0 128)))
     ]
+  
   (scale scalar
+  (beside
   (vector-fold
     (lambda(y st row)
       (vector-fold
@@ -42,7 +69,15 @@
         row))
     board-sprite
     (WS-board ws)) 
+  
+  (above
+    (whoseTurnText ws)
+    (respective-forfeit-button ws)
+  )
+  )
   ))]
   [(= (WS-winner ws) WHITE) (scale scalar (text "White Won\n\nClick to play again." 128 "black"))]
   [else (scale scalar (text "Black Won\n\nClick to play again." 128 "black"))]))
+
 (provide draw)
+(provide respective-forfeit-button)

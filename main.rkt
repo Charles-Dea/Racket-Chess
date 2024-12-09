@@ -38,6 +38,18 @@
 (define (set-sprite sprite piece)
 
   (Piece (Piece-name piece) (Piece-isWhite piece) sprite (Piece-moved? piece)))
+
+(define (invert-isWhiteTurn ws) 
+  (WS
+    (WS-board ws)
+    (WS-firstClick ws)
+    (WS-firstCoord ws)
+    (not (WS-isWhiteTurn ws))
+    (WS-whiteKingPos ws)
+    (WS-blackKingPos ws)
+    (WS-winner ws)
+  )
+)
 (define (hasMoved move? piece coord)
   (Piece (Piece-name piece) (Piece-isWhite piece) (Piece-sprite piece) move? 
   
@@ -113,6 +125,7 @@
 (provide set-name)
 (provide set-isWhite)
 (provide set-sprite)
+(provide invert-isWhiteTurn)
 (provide hasMoved)
 
 (provide alterEnPassant)
