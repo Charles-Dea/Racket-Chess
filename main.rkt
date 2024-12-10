@@ -28,6 +28,12 @@
 (define (set-board ws board)
   (WS board (WS-firstClick ws) (WS-firstCoord ws) (WS-isWhiteTurn ws) (WS-whiteKingPos ws) (WS-blackKingPos ws) (WS-winner ws)))
 
+(define (reset-firstCoord ws)
+  (WS (WS-board ws) #f #f (WS-isWhiteTurn ws) (WS-whiteKingPos ws) (WS-blackKingPos ws) (WS-winner ws))
+  
+)
+
+
 (define (set-winner ws winner)
   (WS (WS-board ws) (WS-firstClick ws) (WS-firstCoord ws) (WS-isWhiteTurn ws) (WS-whiteKingPos ws) (WS-blackKingPos ws) winner))
 
@@ -126,6 +132,7 @@
 (provide set-isWhite)
 (provide set-sprite)
 (provide invert-isWhiteTurn)
+(provide reset-firstCoord)
 (provide hasMoved)
 
 (provide alterEnPassant)

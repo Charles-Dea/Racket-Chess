@@ -81,18 +81,104 @@
     [
       (board (WS-board ws))
       (pcoord (WS-firstCoord ws))
+      (pcoord-x (BCoord-col pcoord))
+      (pcoord-y (BCoord-row pcoord))
       (selected-piece (piece-at board pcoord))
       (isWhite (Piece-isWhite selected-piece))
       (destPiece (piece-at board coord))
       (isSelectedPieceKing (string=? "king" (Piece-name selected-piece)))
       (destPieceIsAllyRook (and (is-piece? destPiece) (string=? (Piece-name destPiece) "rook") (boolean=? (Piece-isWhite destPiece) isWhite)))
-    ]
-    (
-        (and 
-          isSelectedPieceKing 
-          (or destPieceIsAllyRook (= (abs (- (BCoord-col coord) (BCoord-col pcoord))) 2) (= (BCoord-row coord) (BCoord-row pcoord)))
-
+      (deltaXSigned (- (BCoord-col coord) (BCoord-col pcoord)))
+      (deltaXAbs (abs deltaXSigned))
+      (deltaYSigned (- (BCoord-row coord) (BCoord-row pcoord)))
+      (destRook 
+      (if (and isSelectedPieceKing (or destPieceIsAllyRook (and (= 2 deltaXAbs) (= 0 deltaYSigned))))
+        (cond
+          [(positive? deltaXSigned) (piece-at board (BCoord pcoord-y 7))]
+          [else (piece-at board (BCoord pcoord-y 0))]
         )
+       'null))
+       (destRookCoord 
+        (if (is-piece? destRook)
+          (cond
+            [(positive? deltaXSigned) (BCoord pcoord-y 7)]
+            [else (BCoord pcoord-y 0)]
+          )
+          'null
+        )
+       )
+    ]
+    (and
+      (not (eq? destRookCoord 'null))
+      (cond 
+        [(positive? deltaXSigned) (is-right-unobstructed (add1 pcoord-x) destRookCoord board)]
+        [else (is-left-unobstructed (sub1 pcoord-x) destRookCoord board)]
+      )
+      (not (Piece-moved? destRook))
+      (not (Piece-moved? selected-piece))
+      (not (is-in-check ws isWhite))
+      (let*
+        [
+          (stepX (if (positive? deltaXSigned) 1 -1))
+          (firstStepCoord (BCoord pcoord-y (+ pcoord-x stepX)))
+          (secondStepCoord (BCoord pcoord-y (+ pcoord-x (* 2 stepX))))
+          (firstHypotheticalMove (hypothetical-move ws firstStepCoord))
+          (secondHypotheticalMove (hypothetical-move ws secondStepCoord))
+        ]
+        (and
+          (not (is-in-check firstHypotheticalMove isWhite))
+          (not (is-in-check secondHypotheticalMove isWhite))
+        )
+      )
+    )
+  )
+)
+
+(define (castle ws coord)
+
+  (let*
+    [
+      (board (WS-board ws))
+      (pcoord (WS-firstCoord ws))
+      (pcoord-x (BCoord-col pcoord))
+      (pcoord-y (BCoord-row pcoord))
+      (deltaXSigned (- (BCoord-col coord) (BCoord-col pcoord)))
+      (deltaXAbs (abs deltaXSigned))
+      (deltaYSigned (- (BCoord-row coord) (BCoord-row pcoord)))
+      (kingStep (if (positive? deltaXSigned) 1 -1))
+      (kingDestCoord (BCoord pcoord-y (+ (* 2 kingStep) pcoord-x)))
+      (rookFinalCoord (BCoord (BCoord-row kingDestCoord) (- (BCoord-col kingDestCoord) kingStep)))
+      (selected-piece (piece-at board pcoord))
+      (isWhite (Piece-isWhite selected-piece))
+      (destPiece (piece-at board coord))
+      (isSelectedPieceKing (string=? "king" (Piece-name selected-piece)))
+      (destPieceIsAllyRook (and (is-piece? destPiece) (string=? (Piece-name destPiece) "rook") (boolean=? (Piece-isWhite destPiece) isWhite)))
+      
+      (destRook 
+      (if (and isSelectedPieceKing (or destPieceIsAllyRook (and (= 2 deltaXAbs) (= 0 deltaYSigned))))
+        (cond
+          [(positive? deltaXSigned) (piece-at board (BCoord pcoord-y 7))]
+          [else (piece-at board (BCoord pcoord-y 0))]
+        )
+       'null))
+       (destRookCoord 
+        (if (is-piece? destRook)
+          (cond
+            [(positive? deltaXSigned) (BCoord pcoord-y 7)]
+            [else (BCoord pcoord-y 0)]
+          )
+          'null
+        )
+       )
+       (firstMove (set-board ws (move-piece pcoord kingDestCoord board)))
+    ]
+    (reset-firstCoord
+      (invert-isWhiteTurn
+        (set-board
+          firstMove
+          (move-piece destRookCoord rookFinalCoord (WS-board firstMove))
+        )
+      ) 
     )
   )
 
@@ -108,7 +194,7 @@
   (cond 
     ;Get the place the player wants to move to, then don't update the the worldstate until we have checked if the move is actually possible
    ; [(and (WS-firstClick ws) (move-is-possible ws coord) (is-in-check (hypothetical-move ws coord))) ws]
-    ;[(is-valid-castle ws coord) (castle ws)]
+    [(and (WS-firstClick ws) (is-valid-castle ws coord)) (castle ws coord)]
     [(and (WS-firstClick ws)  (not (eq? 'null selected-piece))  (boolean=? (Piece-isWhite selected-piece) (WS-isWhiteTurn ws))) (WS (WS-board ws) #f #f (WS-isWhiteTurn ws) (WS-whiteKingPos ws) (WS-blackKingPos ws) (WS-winner ws))]
     [(and (WS-firstClick ws) (move-is-possible ws coord)) (alterEnPassant (removeEnPassant (WS (move-piece (WS-firstCoord ws) coord (WS-board ws)) #f #f (not (WS-isWhiteTurn ws)) (newKingPos ws coord #t) (newKingPos ws coord #f) (WS-winner ws))))]
     [(eq? selected-piece 'null) ws]
