@@ -76,8 +76,8 @@
   )
   )
   ))]
-  [(= (WS-winner ws) WHITE) (scale scalar (text "White Won\n\nClick to play again." 128 "black"))]
-  [else (scale scalar (text "Black Won\n\nClick to play again." 128 "black"))]))
+  [(= (WS-winner ws) WHITE) (scale scalar WHITE-WINS)]
+  [else (scale scalar BLACK-WINS)]))
 
 (provide draw)
 (provide respective-forfeit-button)
