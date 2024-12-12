@@ -828,15 +828,15 @@
       (destSquare (piece-at board destCoord))
     ]
   (cond 
-    [(eq? destSquare 'nosquare)#f]
-    [(and (is-piece? destSquare) (boolean=? (WS-isWhiteTurn ws) (Piece-isWhite destSquare))) #f]
-    [(is-in-check (hypothetical-move ws destCoord) (WS-isWhiteTurn ws)) #f]
-    [(string=? piece-name "knight") (valid-knight-move ws destCoord)]
-    [(string=? piece-name "rook") (valid-rook-move ws destCoord)]
-    [(string=? piece-name "bishop") (valid-bishop-move ws destCoord)]
-    [(string=? piece-name "queen") (or (valid-rook-move ws destCoord) (valid-bishop-move ws destCoord))]
-    [(string=? piece-name "king") (valid-king-move ws destCoord)]
-    [(string=? piece-name "pawn") (valid-pawn-move ws destCoord)]  
+    [(eq? destSquare 'nosquare) (begin (println "FALSE DUMBASS") #f)]
+    [(and (is-piece? destSquare) (boolean=? (WS-isWhiteTurn ws) (Piece-isWhite destSquare))) (begin (println "FALSE IDIOT") #f)]
+    [(is-in-check (hypothetical-move ws destCoord) (WS-isWhiteTurn ws)) (begin (println "FALSE SHITHEAD") #f)]
+    [(string=? piece-name "knight") (begin (if (valid-knight-move ws destCoord) "" (println "FALSE STUPID")) (valid-knight-move ws destCoord))]
+    [(string=? piece-name "rook") (begin (if (valid-rook-move ws destCoord) "" (println "FALSE FUCKHEAD")) (valid-rook-move ws destCoord))]
+    [(string=? piece-name "bishop") (begin (if (valid-bishop-move ws destCoord) "" (println "FALSE FUCKER")) (valid-bishop-move ws destCoord))]
+    [(string=? piece-name "queen") (begin (if (or (valid-rook-move ws destCoord) (valid-bishop-move ws destCoord)) "" (println "FALSE BAISEUR")) (or (valid-rook-move ws destCoord) (valid-bishop-move ws destCoord)))]
+    [(string=? piece-name "king") (begin (if (valid-king-move ws destCoord) "" (println "FALSE BITCH")) (valid-king-move ws destCoord))]
+    [(string=? piece-name "pawn") (begin (if (valid-pawn-move ws destCoord) "" (println "FALSE FUCKING STUPID FUCKING MOTHERFUCKER")) (valid-pawn-move ws destCoord))]  
   [else #t]
   
   )))
