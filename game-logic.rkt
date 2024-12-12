@@ -824,7 +824,7 @@
       (board (WS-board ws))
       (startCoord (WS-firstCoord ws))
       (piece (piece-at (WS-board ws) startCoord))
-      (piece-name (Piece-name piece))
+      (piece-name (if (is-piece? piece) (Piece-name piece) ""))
       (destSquare (piece-at board destCoord))
     ]
 
