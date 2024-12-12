@@ -55,7 +55,7 @@
       (board (WS-board ws))
       (firstCoord (WS-firstCoord ws))
       (moving-piece (piece-at board firstCoord))
-      (moving-piece-is-king (string=? (Piece-name moving-piece) "king"))
+      (moving-piece-is-king (and (is-piece? moving-piece) (string=? (Piece-name moving-piece) "king")))
     ]
     (invert-isWhiteTurn
       (alterEnPassant
@@ -827,7 +827,6 @@
       (piece-name (if (is-piece? piece) (Piece-name piece) ""))
       (destSquare (piece-at board destCoord))
     ]
-
   (cond 
     [(eq? destSquare 'nosquare)#f]
     [(and (is-piece? destSquare) (boolean=? (WS-isWhiteTurn ws) (Piece-isWhite destSquare))) #f]
