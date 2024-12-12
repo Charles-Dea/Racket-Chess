@@ -39,15 +39,6 @@
     [else currentKingPos]
   )))
 
-(define (print-king-poses ws)
-  (let* 
-  [
-    (bKingPos (WS-blackKingPos ws))
-    (wKingPos (WS-whiteKingPos ws))
-  ] 
-  
-  (println (string-append "black: " (number->string (BCoord-row bKingPos)) " " (number->string (BCoord-col bKingPos)) " " "white: " (number->string (BCoord-row wKingPos)) " " (number->string (BCoord-col wKingPos)))))
-)
 
 (define (hypothetical-move ws coord)
   (let*
@@ -172,14 +163,24 @@
        )
        (firstMove (set-board ws (move-piece pcoord kingDestCoord board)))
     ]
-    (reset-firstCoord
+    #|(reset-firstCoord
       (invert-isWhiteTurn
         (set-board
           firstMove
           (move-piece destRookCoord rookFinalCoord (WS-board firstMove))
         )
       ) 
-    )
+    )|#
+    (WS 
+      (move-piece destRookCoord rookFinalCoord 
+      (WS-board firstMove)) 
+      #f 
+      #f 
+      (not (WS-isWhiteTurn ws)) 
+      (if isWhite kingDestCoord (WS-whiteKingPos firstMove))
+      (if isWhite (WS-blackKingPos firstMove) kingDestCoord)
+      NONE
+      )
   )
 
 )
@@ -248,18 +249,10 @@
     ]
       (ormap
         (lambda (kingPos)
-          (begin
-          (println (BCoord->string kingPos))
-          (println (and
-            (not (eq? kingPos 'nosquare))
-            (move-is-possible ws kingPos)
-            (not (is-in-check (hypothetical-move ws kingPos) isWhite))
-          ))
           (and
             (not (eq? kingPos 'nosquare))
             (move-is-possible ws kingPos)
             (not (is-in-check (hypothetical-move ws kingPos) isWhite))
-          )
           )
         )
         (list u1 u1r1 r1 d1r1 d1 d1l1 l1 u1l1)
@@ -422,8 +415,8 @@
     ]
     (if is-check 
       (cond 
-        [(can-king-outcheck? (set-firstCoord ws kingPos) kingPos) (begin (println "King can outcheck") ws)]
-        [(can-piece-help? ws) (begin (println "Piece can help") ws)]
+        [(can-king-outcheck? (set-firstCoord ws kingPos) kingPos) ws]
+        [(can-piece-help? ws) ws]
         [else (set-winner ws (if isWhite BLACK WHITE))]
       )
       ws
@@ -828,15 +821,15 @@
       (destSquare (piece-at board destCoord))
     ]
   (cond 
-    [(eq? destSquare 'nosquare) (begin (println "FALSE DUMBASS") #f)]
-    [(and (is-piece? destSquare) (boolean=? (WS-isWhiteTurn ws) (Piece-isWhite destSquare))) (begin (println "FALSE IDIOT") #f)]
-    [(is-in-check (hypothetical-move ws destCoord) (WS-isWhiteTurn ws)) (begin (println "FALSE SHITHEAD") #f)]
-    [(string=? piece-name "knight") (begin (if (valid-knight-move ws destCoord) "" (println "FALSE STUPID")) (valid-knight-move ws destCoord))]
-    [(string=? piece-name "rook") (begin (if (valid-rook-move ws destCoord) "" (println "FALSE FUCKHEAD")) (valid-rook-move ws destCoord))]
-    [(string=? piece-name "bishop") (begin (if (valid-bishop-move ws destCoord) "" (println "FALSE FUCKER")) (valid-bishop-move ws destCoord))]
-    [(string=? piece-name "queen") (begin (if (or (valid-rook-move ws destCoord) (valid-bishop-move ws destCoord)) "" (println "FALSE BAISEUR")) (or (valid-rook-move ws destCoord) (valid-bishop-move ws destCoord)))]
-    [(string=? piece-name "king") (begin (if (valid-king-move ws destCoord) "" (println "FALSE BITCH")) (valid-king-move ws destCoord))]
-    [(string=? piece-name "pawn") (begin (if (valid-pawn-move ws destCoord) "" (println "FALSE FUCKING STUPID FUCKING MOTHERFUCKER")) (valid-pawn-move ws destCoord))]  
+    [(eq? destSquare 'nosquare) #f]
+    [(and (is-piece? destSquare) (boolean=? (WS-isWhiteTurn ws) (Piece-isWhite destSquare)))  #f]
+    [(is-in-check (hypothetical-move ws destCoord) (WS-isWhiteTurn ws))  #f]
+    [(string=? piece-name "knight") (valid-knight-move ws destCoord)]
+    [(string=? piece-name "rook") (valid-rook-move ws destCoord)]
+    [(string=? piece-name "bishop") (valid-bishop-move ws destCoord)]
+    [(string=? piece-name "queen") (or (valid-rook-move ws destCoord) (valid-bishop-move ws destCoord))]
+    [(string=? piece-name "king") (valid-king-move ws destCoord)]
+    [(string=? piece-name "pawn") (valid-pawn-move ws destCoord)]  
   [else #t]
   
   )))
