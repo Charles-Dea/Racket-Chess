@@ -227,6 +227,8 @@
   )
 )
 
+(define (BCoord->string coord) (string-append (number->string (BCoord-col coord)) " " (number->string (BCoord-row coord))))
+
 (define (can-king-outcheck? ws kingPos)
   (let*
     [ 
@@ -244,16 +246,25 @@
       (l1 (BCoord (+ (BCoord-row kingPos) 0) (- (BCoord-col kingPos) 1)))
       (u1l1 (BCoord (- (BCoord-row kingPos) 1) (- (BCoord-col kingPos) 1)))
     ]
-    (ormap
-      (lambda (kingPos)
-        (and
-          (not (eq? kingPos 'nosquare))
-          (move-is-possible ws kingPos)
-          (not (is-in-check (hypothetical-move ws kingPos) isWhite))
+      (ormap
+        (lambda (kingPos)
+          (begin
+          (println (BCoord->string kingPos))
+          (println (and
+            (not (eq? kingPos 'nosquare))
+            (move-is-possible ws kingPos)
+            (not (is-in-check (hypothetical-move ws kingPos) isWhite))
+          ))
+          (and
+            (not (eq? kingPos 'nosquare))
+            (move-is-possible ws kingPos)
+            (not (is-in-check (hypothetical-move ws kingPos) isWhite))
+          )
+          )
         )
+        (list u1 u1r1 r1 d1r1 d1 d1l1 l1 u1l1)
       )
-      (list u1 u1r1 r1 d1r1 d1 d1l1 l1 u1l1)
-    )
+    
   )
 )
 
@@ -366,7 +377,7 @@
 
   (let*
     [
-      (board (WS-board))
+      (board (WS-board ws))
       (isWhite (WS-isWhiteTurn ws))
     ]
     (ormap
@@ -411,8 +422,8 @@
     ]
     (if is-check 
       (cond 
-        [(can-king-outcheck? ws kingPos) ws]
-        [(can-piece-help? ws) ws]
+        [(can-king-outcheck? (set-firstCoord ws kingPos) kingPos) (begin (println "King can outcheck") ws)]
+        [(can-piece-help? ws) (begin (println "Piece can help") ws)]
         [else (set-winner ws (if isWhite BLACK WHITE))]
       )
       ws
@@ -792,13 +803,16 @@
 
 (define (valid-king-move ws destCoord)
   (let* 
-  [ (startCoord (WS-firstCoord ws))
+  [ 
+    (startCoord (WS-firstCoord ws))
     (firstX (BCoord-col startCoord))
     (firstY (BCoord-row startCoord))
     (endX (BCoord-col destCoord))
     (endY (BCoord-row destCoord))
     (deltaX (abs (- firstX endX)))
-    (deltaY (abs (- firstY endY)))]
+    (deltaY (abs (- firstY endY)))
+    
+  ]
     
     (and (<= (abs deltaX) 1) (<= (abs deltaY) 1))
     )
@@ -807,19 +821,23 @@
 (define (move-is-possible ws destCoord)
   (let* 
     [
-    (startCoord (WS-firstCoord ws))
-    (piece (piece-at (WS-board ws) startCoord))
-    (piece-name (Piece-name piece))
+      (board (WS-board ws))
+      (startCoord (WS-firstCoord ws))
+      (piece (piece-at (WS-board ws) startCoord))
+      (piece-name (Piece-name piece))
+      (destSquare (piece-at board destCoord))
     ]
 
   (cond 
-  [(is-in-check (hypothetical-move ws destCoord) (WS-isWhiteTurn ws)) #f]
-  [(string=? piece-name "knight") (valid-knight-move ws destCoord)]
-  [(string=? piece-name "rook") (valid-rook-move ws destCoord)]
-  [(string=? piece-name "bishop") (valid-bishop-move ws destCoord)]
-  [(string=? piece-name "queen") (or (valid-rook-move ws destCoord) (valid-bishop-move ws destCoord))]
-  [(string=? piece-name "king") (valid-king-move ws destCoord)]
-  [(string=? piece-name "pawn") (valid-pawn-move ws destCoord)]  
+    [(eq? destSquare 'nosquare)#f]
+    [(and (is-piece? destSquare) (boolean=? (WS-isWhiteTurn ws) (Piece-isWhite destSquare))) #f]
+    [(is-in-check (hypothetical-move ws destCoord) (WS-isWhiteTurn ws)) #f]
+    [(string=? piece-name "knight") (valid-knight-move ws destCoord)]
+    [(string=? piece-name "rook") (valid-rook-move ws destCoord)]
+    [(string=? piece-name "bishop") (valid-bishop-move ws destCoord)]
+    [(string=? piece-name "queen") (or (valid-rook-move ws destCoord) (valid-bishop-move ws destCoord))]
+    [(string=? piece-name "king") (valid-king-move ws destCoord)]
+    [(string=? piece-name "pawn") (valid-pawn-move ws destCoord)]  
   [else #t]
   
   )))
