@@ -13,3 +13,4 @@
 (provide BCoord-col)
 (provide BCoord-row)
 (provide piece-at)
+(provide is-valid-coord)

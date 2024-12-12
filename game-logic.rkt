@@ -194,9 +194,9 @@
   (cond 
     ;Get the place the player wants to move to, then don't update the the worldstate until we have checked if the move is actually possible
    ; [(and (WS-firstClick ws) (move-is-possible ws coord) (is-in-check (hypothetical-move ws coord))) ws]
-    [(and (WS-firstClick ws) (is-valid-castle ws coord)) (castle ws coord)]
+    [(and (WS-firstClick ws) (is-valid-castle ws coord)) (check-for-checkmate (castle ws coord))]
     [(and (WS-firstClick ws)  (not (eq? 'null selected-piece))  (boolean=? (Piece-isWhite selected-piece) (WS-isWhiteTurn ws))) (WS (WS-board ws) #f #f (WS-isWhiteTurn ws) (WS-whiteKingPos ws) (WS-blackKingPos ws) (WS-winner ws))]
-    [(and (WS-firstClick ws) (move-is-possible ws coord)) (alterEnPassant (removeEnPassant (WS (move-piece (WS-firstCoord ws) coord (WS-board ws)) #f #f (not (WS-isWhiteTurn ws)) (newKingPos ws coord #t) (newKingPos ws coord #f) (WS-winner ws))))]
+    [(and (WS-firstClick ws) (move-is-possible ws coord)) (check-for-checkmate (alterEnPassant (removeEnPassant (WS (move-piece (WS-firstCoord ws) coord (WS-board ws)) #f #f (not (WS-isWhiteTurn ws)) (newKingPos ws coord #t) (newKingPos ws coord #f) (WS-winner ws)))))]
     [(eq? selected-piece 'null) ws]
     [(boolean=? (Piece-isWhite selected-piece) (WS-isWhiteTurn ws)) (WS (WS-board ws) #t coord (WS-isWhiteTurn ws) (WS-whiteKingPos ws) (WS-blackKingPos ws) (WS-winner ws))]
     [else ws])))
@@ -223,7 +223,200 @@
       (not (is-ne-safe (add1 x) (sub1 y) board isWhite))
       (not (is-sw-safe (sub1 x) (add1 y) board isWhite))
       (not (is-se-safe (add1 x) (add1 y) board isWhite))
+    )
   )
+)
+
+(define (can-king-outcheck? ws kingPos)
+  (let*
+    [ 
+      (isWhite (WS-isWhiteTurn ws))
+      (firstCoord (WS-firstCoord ws))
+      (x (BCoord-col firstCoord))
+      (y (BCoord-row firstCoord))
+      (deltaY (if isWhite 1 -1))
+      (u1 (BCoord (- (BCoord-row kingPos) 1) (- (BCoord-col kingPos) 0)))
+      (u1r1 (BCoord (- (BCoord-row kingPos) 1) (+ (BCoord-col kingPos) 1)))
+      (r1 (BCoord (- (BCoord-row kingPos) 0) (+ (BCoord-col kingPos) 1)))
+      (d1r1 (BCoord (+ (BCoord-row kingPos) 1) (+ (BCoord-col kingPos) 1)))
+      (d1 (BCoord (+ (BCoord-row kingPos) 1) (+ (BCoord-col kingPos) 0)))
+      (d1l1 (BCoord (+ (BCoord-row kingPos) 1) (- (BCoord-col kingPos) 1)))
+      (l1 (BCoord (+ (BCoord-row kingPos) 0) (- (BCoord-col kingPos) 1)))
+      (u1l1 (BCoord (- (BCoord-row kingPos) 1) (- (BCoord-col kingPos) 1)))
+    ]
+    (ormap
+      (lambda (kingPos)
+        (and
+          (not (eq? kingPos 'nosquare))
+          (move-is-possible ws kingPos)
+          (not (is-in-check (hypothetical-move ws kingPos) isWhite))
+        )
+      )
+      (list u1 u1r1 r1 d1r1 d1 d1l1 l1 u1l1)
+    )
+  )
+)
+
+(define (can-pawn-help? ws)
+  (let*
+    [
+      (isWhite (WS-isWhiteTurn ws))
+      (firstCoord (WS-firstCoord ws))
+      (x (BCoord-col firstCoord))
+      (y (BCoord-row firstCoord))
+      (deltaY (if isWhite 1 -1))
+      (y1 (BCoord (+ y deltaY) x))
+      (y1l (BCoord (+ y deltaY) (sub1 x)))
+      (y1r (BCoord (+ y deltaY) (add1 x)))
+      (y2 (BCoord (+ y (* 2 deltaY)) x))
+    ]
+    (ormap
+      (lambda (destCoord)
+        (and
+          (not (eq? destCoord 'nosquare))
+          (move-is-possible ws destCoord)
+          (not (is-in-check (hypothetical-move ws destCoord) isWhite))
+        )
+      )
+      (list y1 y1l y1r y2)
+    )
+  )
+)
+
+(define (can-knight-help? ws)
+  (let*
+    [
+      (isWhite (WS-isWhiteTurn ws))
+      (firstCoord (WS-firstCoord ws))
+      (x (BCoord-col firstCoord))
+      (y (BCoord-row firstCoord))
+      (deltaY (if isWhite 1 -1))
+      (u2l1 (BCoord (- y 2) (- x 1)))
+      (u2r1 (BCoord (- y 2) (+ x 1)))
+      (u1r2 (BCoord (- y 1) (+ x 2)))
+      (d1r2 (BCoord (+ y 1) (+ x 2)))
+      (d2r1 (BCoord (+ y 2) (+ x 1)))
+      (d2l1 (BCoord (+ y 2) (- x 1)))
+      (l2d1 (BCoord (+ y 1) (- x 2)))
+      (l2u1 (BCoord (- y 1) (- x 2)))
+    ]
+    (ormap
+      (lambda (destCoord)
+        (and
+          (not (eq? destCoord 'nosquare))
+          (move-is-possible ws destCoord)
+          (not (is-in-check (hypothetical-move ws destCoord) isWhite))
+        )
+      )
+      (list u2l1 u2r1 u1r2 d1r2 d2r1 d2l1 l2d1 l2u1)
+    )
+  )
+)
+
+(define (can-rook-help? ws)
+  (let*
+    [
+      (isWhite (WS-isWhiteTurn ws))
+      (firstCoord (WS-firstCoord ws))
+      (x (BCoord-col firstCoord))
+      (y (BCoord-row firstCoord))
+      (deltaY (if isWhite 1 -1))
+      (horiz-coords (map (lambda(tx) (BCoord tx y)) (range 8)))
+      (vert-coords (map (lambda(ty) (BCoord ty x)) (range 8)))
+    ]
+    (ormap
+      (lambda (destCoord)
+        (and
+          (not (eq? destCoord 'nosquare))
+          (move-is-possible ws destCoord)
+          (not (is-in-check (hypothetical-move ws destCoord) isWhite))
+        )
+      )
+      (append horiz-coords vert-coords)
+    )
+  )
+)
+
+(define (can-bishop-help? ws)
+
+  (let*
+    [
+      (isWhite (WS-isWhiteTurn ws))
+      (firstCoord (WS-firstCoord ws))
+      (x (BCoord-col firstCoord))
+      (y (BCoord-row firstCoord))
+      (deltaY (if isWhite 1 -1))
+      (horiz-coords (map (lambda (d) (BCoord (+ y d) (+ x d))) (range -7 8)))
+      (vert-coords (map (lambda (d) (BCoord (+ y d) (- x d))) (range -7 8)))
+    ]
+    (ormap
+      (lambda (destCoord)
+        (and
+          (not (eq? destCoord 'nosquare))
+          (move-is-possible ws destCoord)
+          (not (is-in-check (hypothetical-move ws destCoord) isWhite))
+        )
+      )
+      (append horiz-coords vert-coords)
+    )
+  )
+)
+
+(define (can-piece-help? ws)
+
+  (let*
+    [
+      (board (WS-board))
+      (isWhite (WS-isWhiteTurn ws))
+    ]
+    (ormap
+      (lambda (y)
+        (ormap (lambda (x)
+          (let* 
+          [
+            (coord (BCoord y x))
+            (piece (piece-at board coord))
+            (piece-name (if (is-piece? piece) (Piece-name piece) ""))
+          ]
+          (and
+            (is-piece? piece)
+            (boolean=? (Piece-isWhite piece) isWhite)
+            (cond
+              [(string=? piece-name "pawn") (can-pawn-help? (set-firstCoord ws coord))]
+              [(string=? piece-name "knight") (can-knight-help? (set-firstCoord ws coord))]
+              [(string=? piece-name "rook") (can-rook-help? (set-firstCoord ws coord))]
+              [(string=? piece-name "bishop") (can-bishop-help? (set-firstCoord ws coord))]
+              [(string=? piece-name "queen") (or (can-rook-help? (set-firstCoord ws coord)) (can-bishop-help? (set-firstCoord ws coord)))]
+              [else #f]
+            )
+            )
+          )
+        ) (range 9))
+      )
+    (range 9))
+  )
+)
+
+(define (check-for-checkmate ws)
+  (let* 
+    [
+      (isWhite (WS-isWhiteTurn ws))
+      (is-check (is-in-check ws isWhite))
+      (kingPos (if isWhite (WS-whiteKingPos ws) (WS-blackKingPos ws)))
+      (board (WS-board ws))
+      (x (BCoord-col kingPos))
+      (y (BCoord-row kingPos))    
+      (opposingColor (not isWhite))
+
+    ]
+    (if is-check 
+      (cond 
+        [(can-king-outcheck? ws kingPos) ws]
+        [(can-piece-help? ws) ws]
+        [else (set-winner ws (if isWhite BLACK WHITE))]
+      )
+      ws
+    )
   )
 )
 
@@ -264,6 +457,7 @@
   )
 
 ))
+
 (define (pawn-can-hit ws destCoord isWhite)
   (let*
   ((up (if isWhite 1 -1))
@@ -490,7 +684,6 @@
     [(eq? (piece-at board pc) 'null) (is-nw-unobstructed (- x 1) (- y 1) destCoord board)]
     [else #f])))
 
-;very deicdedly unfinished
 (define (valid-pawn-move ws destCoord)
   (let* 
   [ (board (WS-board ws))
@@ -517,8 +710,6 @@
     ]
     (and (<= deltaX 1) (<= deltaY 2)
     (cond 
-    ;[(and (not))]
-    ;[]
     ;normal forward movement for white
     [(and isWhite (not destHasPiece) (= endY (sub1 firstY)) (= deltaX 0))  (is-up-unobstructed (sub1 firstY) destCoord board)]
     ;normal forward movement for black
@@ -531,12 +722,10 @@
     [(and isWhite destPieceIsOpp (negative? dYSigned) (= 1 deltaX)) #t]
     ; munch for black pawns
     [(and (not isWhite) destPieceIsOpp (positive? dYSigned) (= 1 deltaX)) #t]
-    ;en passant detection(up and to the right)
+    ;en passant detection white
     [(and isWhite belowPieceCanEnPassant (= -1 dYSigned) (= 1 deltaX)) #t]
+    ;en passant detection black
     [(and (not isWhite) abovePieceCanEnPassant (= 1 dYSigned) (= 1 deltaX)) #t]
-    ;en passant detection(up and to the left)
-    ;en passant detection(down and to the right)
-    ;en passant detection(down and to the left)
     [else #f]
     ))
   )
@@ -577,7 +766,6 @@
     )
   )
 
-
   (define (valid-bishop-move ws destCoord)
   (let* 
   [ (board (WS-board ws))
@@ -616,8 +804,6 @@
     )
   )
 
-
-
 (define (move-is-possible ws destCoord)
   (let* 
     [
@@ -633,16 +819,10 @@
   [(string=? piece-name "bishop") (valid-bishop-move ws destCoord)]
   [(string=? piece-name "queen") (or (valid-rook-move ws destCoord) (valid-bishop-move ws destCoord))]
   [(string=? piece-name "king") (valid-king-move ws destCoord)]
-  [(string=? piece-name "pawn") (valid-pawn-move ws destCoord)]
-  
-  ;pawn to queen detection(end of board reached) --> needs to be separate funciton that can have different parameters
+  [(string=? piece-name "pawn") (valid-pawn-move ws destCoord)]  
   [else #t]
   
   )))
-
-;(define (possible-moves ws coord) )
-;check if a special move or special scenario is occurring or about to occur(en passant or pawn -> queen or smt)
-;(define (special-moves ws coord) )
 
 (provide handle-move)
 (provide move-piece)
