@@ -59,12 +59,16 @@
   )
 )
 (define (hasMoved move? piece coord)
+  (if (is-piece? piece)
   (Piece (Piece-name piece) (Piece-isWhite piece) (Piece-sprite piece) move? 
   
   (if (and (string=? "pawn" (Piece-name piece)) (not (Piece-moved? piece)) (or (and (Piece-isWhite piece) (= (BCoord-row coord) 4)) (and (not (Piece-isWhite piece)) (= (BCoord-row coord) 3)))) #t
   (Piece-canEnPassant? piece))
   
-  ))
+  )
+  'null
+  
+))
 
 (define (removeEnPassant ws) (WS 
 
